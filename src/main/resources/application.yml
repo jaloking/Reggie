@@ -26,4 +26,4 @@ mybatis-plus:
       id-type: ASSIGN_ID
 # 常量配置，存放图片的目录
 reggie:
-  path: D:\Study\Spring Boot\reggie\img\
+  path: D:\Study\Spring Boot\reggie homework\img\
