@@ -16,6 +16,7 @@ import com.itheima.reggie.service.ShoppingCartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -167,8 +168,14 @@ public class OrderController {
      * @param session HTTP会话，用于获取当前登录用户信息
      * @return 订单提交结果
      */
+    // 记得注入RedisTemplate
     @PostMapping("/submit")
     public R<String> submit(@RequestBody Orders orders, HttpSession session) {
+
+        // 如果状态存在且为0（打烊），则禁止下单
+        if(ShopController.SHOP_STATUS == 0){
+            return R.error("本店已打烊，无法下单，请明天再来！");
+        }
         try {
             // 1. 从Session获取登录用户ID
             Long userId = (Long) session.getAttribute("user");

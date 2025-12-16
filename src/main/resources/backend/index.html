@@ -78,7 +78,20 @@
               >
               <span>{{headTitle}}</span>
             </div>
-            <div class="right-menu">
+              <div class="right-menu">
+                  <div style="display: inline-block; margin-right: 20px; vertical-align: middle;">
+                      <el-switch
+                              v-model="shopStatus"
+                              active-color="#13ce66"
+                              inactive-color="#ff4949"
+                              active-text="营业中"
+                              inactive-text="打烊中"
+                              :active-value="1"
+                              :inactive-value="0"
+                              @change="handleStatusChange"
+                      >
+                      </el-switch>
+                  </div>
               <div class="avatar-wrapper">{{ userInfo.name }}</div>
               <!-- <div class="logout" @click="logout">退出</div> -->
               <img src="images/icons/btn_close@2x.png" class="outLogin" alt="退出" @click="logout" />
@@ -117,6 +130,7 @@
             defAct: '1',
             menuActived: '1',
             userInfo: {},
+              shopStatus: 1, // 新增：店铺状态，默认为1（营业中）
             menuList: [
                   {
                     id: '1',
@@ -158,6 +172,7 @@
           if (userInfo) {
             this.userInfo = JSON.parse(userInfo)
           }
+          this.initShopStatus() // 新增：页面加载时获取最新营业状态
           this.closeLoading()
         },
         beforeDestroy() {
@@ -168,6 +183,32 @@
           window.menuHandle = this.menuHandle
         },
         methods: {
+            initShopStatus() {
+                // 这里直接使用 axios 发送请求
+                axios.get('/shop/status').then(res => {
+                    if (res.data.code === 1) {
+                        this.shopStatus = res.data.data
+                    }
+                }).catch(err => {
+                    this.$message.error('获取店铺状态失败')
+                })
+            },
+
+            // 新增：切换营业状态
+            handleStatusChange(val) {
+                axios.put('/shop/' + val).then(res => {
+                    if (res.data.code === 1) {
+                        this.$message.success('店铺营业状态已更新')
+                    } else {
+                        this.$message.error(res.data.msg)
+                        // 如果修改失败，将开关状态回滚
+                        this.shopStatus = val === 1 ? 0 : 1
+                    }
+                }).catch(err => {
+                    this.$message.error('请求失败')
+                    this.shopStatus = val === 1 ? 0 : 1
+                })
+            },
           logout() {
             logoutApi().then((res)=>{
               if(res.code === 1){
